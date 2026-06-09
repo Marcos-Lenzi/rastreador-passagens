@@ -1,0 +1,21 @@
+{
+  "routes": [
+    { "origin": "POA", "destination": "MIA", "label": "Porto Alegre → Miami" },
+    { "origin": "POA", "destination": "MCO", "label": "Porto Alegre → Orlando" },
+    { "origin": "POA", "destination": "ORD", "label": "Porto Alegre → Chicago" },
+    { "origin": "POA", "destination": "ATL", "label": "Porto Alegre → Atlanta" }
+  ],
+  "departureWindow": { "start": "2026-07-20", "end": "2026-10-30" },
+  "tripLengthDays": { "min": 20, "max": 27 },
+  "returnOffsetDays": 23,
+  "passengers": { "adults": 1, "children": 0, "infants": 0 },
+  "concurrency": 3,
+  "estimatedMileCostPer1000BRL": 20,
+  "alerts": {
+    "maxMilesRoundTrip": 130000,
+    "maxClubMilesRoundTrip": 115000,
+    "maxCashRoundTrip": 4500,
+    "improvementFactor": 0.97,
+    "realertAfterDays": 7
+  }
+}
