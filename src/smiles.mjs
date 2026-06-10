@@ -114,14 +114,17 @@ export async function warmupSearch(page, { destCode = 'MIA' } = {}) {
   }
 
   // tenta concluir a busca; se não der, a interação já validou a sessão
+  const respPromise = page
+    .waitForResponse((r) => r.url().includes('/v1/airlines/search'), { timeout: 60000 })
+    .catch(() => null);
   try {
-    const respPromise = page.waitForResponse((r) => r.url().includes('/v1/airlines/search'), { timeout: 60000 });
     await form.getByRole('button', { name: 'Buscar voos' }).click({ timeout: 10000 });
-    const resp = await respPromise;
-    return { completed: true, status: resp.status() };
   } catch {
+    await respPromise;
     return { completed: false };
   }
+  const resp = await respPromise;
+  return resp ? { completed: true, status: resp.status() } : { completed: false };
 }
 
 // Interação rica (mouse, scroll, hover) — mantém a sessão validada no anti-bot
@@ -176,15 +179,23 @@ function summarizeSegment(seg) {
  * Executa uma busca navegando até a página de resultados do site e
  * interceptando a resposta da API que o próprio site dispara.
  */
-export async function searchOne(page, query, pax, { timeoutMs = 75000 } = {}) {
+export async function searchOne(page, query, pax, { timeoutMs = 60000 } = {}) {
   const url = searchPageUrl(query, pax);
+  // .catch aqui evita promessa órfã derrubando o processo (unhandled rejection)
+  const respPromise = page
+    .waitForResponse((r) => r.url().includes('/v1/airlines/search') && r.request().method() === 'GET', {
+      timeout: timeoutMs,
+    })
+    .catch(() => null);
   try {
-    const respPromise = page.waitForResponse(
-      (r) => r.url().includes('/v1/airlines/search') && r.request().method() === 'GET',
-      { timeout: timeoutMs }
-    );
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: timeoutMs });
+  } catch (e) {
+    await respPromise;
+    return { ...query, error: 'goto: ' + String(e && e.message ? e.message : e).slice(0, 100) };
+  }
+  try {
     const resp = await respPromise;
+    if (!resp) return { ...query, error: 'timeout esperando a resposta da busca' };
     if (!resp.ok()) return { ...query, error: 'HTTP ' + resp.status() };
     const data = await resp.json();
     const segs = data.requestedFlightSegmentList || [];
