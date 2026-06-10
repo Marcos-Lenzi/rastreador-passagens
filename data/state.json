@@ -1,0 +1,83 @@
+{
+  "bestEver": {
+    "POA-MIA|SMILES": {
+      "metric": 310000,
+      "estBRL": 6545.77,
+      "depDate": "2026-07-20",
+      "retDate": "2026-08-12",
+      "at": "2026-06-10T11:57:53.987Z"
+    },
+    "POA-MIA|SMILES_CLUB": {
+      "metric": 281300,
+      "estBRL": 5971.77,
+      "depDate": "2026-07-20",
+      "retDate": "2026-08-12",
+      "at": "2026-06-10T11:57:53.987Z"
+    },
+    "POA-MIA|SMILES_MONEY": {
+      "metric": 54800,
+      "estBRL": 6311.77,
+      "depDate": "2026-07-20",
+      "retDate": "2026-08-12",
+      "at": "2026-06-10T11:57:53.987Z"
+    },
+    "POA-MIA|MONEY": {
+      "metric": 6714.92,
+      "estBRL": 7266.72,
+      "depDate": "2026-07-20",
+      "retDate": "2026-08-12",
+      "at": "2026-06-10T11:57:53.987Z"
+    },
+    "POA-MCO|SMILES": {
+      "metric": 259000,
+      "estBRL": 5525.77,
+      "depDate": "2026-07-20",
+      "retDate": "2026-08-12",
+      "at": "2026-06-10T11:57:53.987Z"
+    },
+    "POA-MCO|SMILES_CLUB": {
+      "metric": 235800,
+      "estBRL": 5061.77,
+      "depDate": "2026-07-20",
+      "retDate": "2026-08-12",
+      "at": "2026-06-10T11:57:53.987Z"
+    },
+    "POA-MCO|SMILES_MONEY": {
+      "metric": 42600,
+      "estBRL": 5347.77,
+      "depDate": "2026-07-20",
+      "retDate": "2026-08-12",
+      "at": "2026-06-10T11:57:53.987Z"
+    },
+    "POA-MCO|MONEY": {
+      "metric": 4626.51,
+      "estBRL": 5178.31,
+      "depDate": "2026-07-20",
+      "retDate": "2026-08-12",
+      "at": "2026-06-10T11:57:53.987Z"
+    },
+    "POA-ATL|SMILES": {
+      "metric": 483000,
+      "estBRL": 9660,
+      "depDate": "2026-07-20",
+      "retDate": "2026-08-12",
+      "at": "2026-06-10T11:57:53.987Z"
+    },
+    "POA-ATL|SMILES_CLUB": {
+      "metric": 457500,
+      "estBRL": 9150,
+      "depDate": "2026-07-20",
+      "retDate": "2026-08-12",
+      "at": "2026-06-10T11:57:53.987Z"
+    },
+    "POA-ATL|SMILES_MONEY": {
+      "metric": 241600,
+      "estBRL": 9442,
+      "depDate": "2026-07-20",
+      "retDate": "2026-08-12",
+      "at": "2026-06-10T11:57:53.987Z"
+    }
+  },
+  "lastAlerted": {},
+  "lastDigestDate": "2026-06-10"
+}

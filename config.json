@@ -8,6 +8,7 @@
   "departureWindow": { "start": "2026-07-20", "end": "2026-10-30" },
   "tripLengthDays": { "min": 20, "max": 27 },
   "returnOffsetDays": 23,
+  "scanStepDays": 3,
   "passengers": { "adults": 1, "children": 0, "infants": 0 },
   "concurrency": 3,
   "estimatedMileCostPer1000BRL": 20,

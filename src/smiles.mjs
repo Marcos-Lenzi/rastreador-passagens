@@ -2,9 +2,6 @@
 // API e nós interceptamos a resposta — passa pela proteção anti-bot).
 import { chromium } from 'playwright';
 
-const UA =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36';
-
 const epochBRT = (iso) => {
   const [y, m, d] = iso.split('-').map(Number);
   return Date.UTC(y, m - 1, d, 3); // meia-noite de Brasília
@@ -39,28 +36,29 @@ export function searchPageUrl({ origin, destination, departureDate, returnDate }
 }
 
 export async function openSmilesSession({ headful = false } = {}) {
+  // channel:'chrome' usa o Google Chrome real instalado na máquina — a
+  // identidade do navegador fica 100% consistente para o anti-bot.
   const browser = await chromium.launch({
     headless: !headful,
+    channel: process.env.BROWSER_CHANNEL || 'chrome',
     args: ['--disable-blink-features=AutomationControlled', '--no-sandbox', '--disable-dev-shm-usage'],
   });
   const context = await browser.newContext({
-    userAgent: UA,
     locale: 'pt-BR',
     timezoneId: 'America/Sao_Paulo',
     viewport: { width: 1366, height: 768 },
   });
   const page = await context.newPage();
 
-  // corta peso desnecessário, mas mantém todos os scripts (o sensor anti-bot precisa rodar)
-  await page.route('**/*', (route) => {
-    const req = route.request();
-    const type = req.resourceType();
-    const url = req.url();
-    if (type === 'image' || type === 'media' || type === 'font') return route.abort();
-    if (/google-analytics|googletagmanager|doubleclick|facebook|hotjar|clarity|salesforce|chaordic|dynamicyield/i.test(url))
-      return route.abort();
-    return route.continue();
-  });
+  // Interceptar requisições (page.route) pode quebrar o CORS das chamadas da
+  // própria página, então só bloqueamos recursos se BLOCK_ASSETS=1.
+  if (process.env.BLOCK_ASSETS === '1') {
+    await page.route('**/*', (route) => {
+      const type = route.request().resourceType();
+      if (type === 'image' || type === 'media' || type === 'font') return route.abort();
+      return route.continue();
+    });
+  }
 
   await page.goto('https://www.smiles.com.br/home', { waitUntil: 'domcontentloaded', timeout: 60000 });
   await page
@@ -73,6 +71,79 @@ export async function openSmilesSession({ headful = false } = {}) {
     await page.waitForTimeout(300 + Math.random() * 400);
   }
   return { browser, context, page };
+}
+
+const MONTHS_PT = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+/**
+ * Interage com o formulário de busca como um usuário real. Isso valida a
+ * sessão no anti-bot (Akamai) — depois disso os deep-links funcionam.
+ * Best-effort: completar a busca não é obrigatório; a interação é o que vale.
+ */
+export async function warmupSearch(page, { destCode = 'MIA' } = {}) {
+  const form = page.locator('#DesktopFlightSearch-form-click');
+  await form.waitFor({ timeout: 30000 });
+
+  const origemBox = form.getByRole('textbox', { name: 'Origem' });
+  await origemBox.click();
+  await origemBox.pressSequentially('Porto Alegre', { delay: 80 });
+  await page.waitForTimeout(2500);
+  await page.getByText('Salgado Filho', { exact: false }).first().click();
+  await page.waitForTimeout(800);
+
+  const destinoBox = form.getByRole('textbox', { name: 'Destino' });
+  await destinoBox.click();
+  await destinoBox.pressSequentially(destCode, { delay: 100 });
+  await page.waitForTimeout(2500);
+  await page.locator('li:visible, [role="option"]:visible').filter({ hasText: destCode }).first().click();
+  await page.waitForTimeout(800);
+
+  // escolhe datas próximas que já estejam visíveis no calendário (1º dia
+  // habilitado de cada mês visível) — o objetivo é interação, não a data em si
+  await form.locator('#startDateId').click();
+  await page.waitForTimeout(800);
+  const enabledDays = page.locator('td[aria-label^="Choose"]:visible, td[aria-label*="Selected"]:visible');
+  const count = await enabledDays.count();
+  if (count > 1) {
+    await enabledDays.nth(Math.min(5, count - 2)).click().catch(() => {});
+    await page.waitForTimeout(600);
+    const after = page.locator('td[aria-label^="Choose"]:visible');
+    const n2 = await after.count();
+    if (n2 > 6) await after.nth(6).click().catch(() => {});
+    await page.waitForTimeout(600);
+  }
+
+  // tenta concluir a busca; se não der, a interação já validou a sessão
+  try {
+    const respPromise = page.waitForResponse((r) => r.url().includes('/v1/airlines/search'), { timeout: 60000 });
+    await form.getByRole('button', { name: 'Buscar voos' }).click({ timeout: 10000 });
+    const resp = await respPromise;
+    return { completed: true, status: resp.status() };
+  } catch {
+    return { completed: false };
+  }
+}
+
+// Interação rica (mouse, scroll, hover) — mantém a sessão validada no anti-bot
+export async function humanize(page, seconds) {
+  const end = Date.now() + seconds * 1000;
+  while (Date.now() < end) {
+    const action = Math.random();
+    try {
+      if (action < 0.5) {
+        await page.mouse.move(150 + Math.random() * 1000, 100 + Math.random() * 500, { steps: 8 + Math.floor(Math.random() * 12) });
+      } else if (action < 0.8) {
+        await page.mouse.wheel(0, Math.random() < 0.7 ? 200 + Math.random() * 400 : -(100 + Math.random() * 200));
+      } else {
+        const links = page.locator('a:visible, button:visible');
+        const n = await links.count();
+        if (n) await links.nth(Math.floor(Math.random() * n)).hover({ timeout: 1500 }).catch(() => {});
+      }
+    } catch {
+      /* página pode ter navegado no meio — segue o baile */
+    }
+    await page.waitForTimeout(300 + Math.random() * 900);
+  }
 }
 
 function summarizeSegment(seg) {
@@ -128,22 +199,30 @@ export async function searchOne(page, query, pax, { timeoutMs = 75000 } = {}) {
 }
 
 /**
- * Roda uma lista de buscas em sequência, abrindo uma aba nova a cada N
- * consultas (o SPA da Smiles às vezes para de disparar buscas na mesma aba).
+ * Roda as buscas em sequência na MESMA página, com interação humanizada antes
+ * de cada consulta (mantém a sessão validada). Na falha: re-interage e tenta
+ * de novo; se acumular falhas seguidas, volta à home e refaz o warmup.
  */
-export async function searchAll(context, queries, pax, { onResult, pauseMs = 2000, pageEvery = 1 } = {}) {
+export async function searchAll(page, queries, pax, { onResult, rewarmAfterFails = 3 } = {}) {
   const results = [];
-  let page = null;
+  let consecutiveFails = 0;
   for (let i = 0; i < queries.length; i++) {
-    if (!page || i % pageEvery === 0) {
-      if (page) await page.close().catch(() => {});
-      page = await context.newPage();
+    await humanize(page, 4 + Math.random() * 3);
+    let r = await searchOne(page, queries[i], pax, { timeoutMs: 60000 });
+    if (r.error) {
+      await humanize(page, 10 + Math.random() * 5);
+      r = await searchOne(page, queries[i], pax, { timeoutMs: 60000 });
     }
-    const r = await searchOne(page, queries[i], pax);
     results.push(r);
     onResult?.(r, i, queries.length);
-    await page.waitForTimeout(pauseMs + Math.random() * 1000);
+    consecutiveFails = r.error ? consecutiveFails + 1 : 0;
+    if (consecutiveFails >= rewarmAfterFails) {
+      console.log(`[smiles] ${consecutiveFails} falhas seguidas — refazendo o warmup…`);
+      await page.goto('https://www.smiles.com.br/home', { waitUntil: 'domcontentloaded', timeout: 60000 }).catch(() => {});
+      await page.getByRole('button', { name: 'Aceitar', exact: true }).click({ timeout: 8000 }).catch(() => {});
+      await warmupSearch(page).catch(() => {});
+      consecutiveFails = 0;
+    }
   }
-  if (page) await page.close().catch(() => {});
   return results;
 }

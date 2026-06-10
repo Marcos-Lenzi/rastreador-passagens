@@ -2,7 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { openSmilesSession, discoverApiKey, searchBatch, smilesSearchUrl } from './smiles.mjs';
+import { openSmilesSession, warmupSearch, searchAll, searchPageUrl } from './smiles.mjs';
 import { sendTelegram } from './telegram.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -16,12 +16,12 @@ const fmtMiles = (n) => n.toLocaleString('pt-BR');
 const fmtBRL = (n) => 'R$ ' + n.toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 const fmtDate = (iso) => iso.split('-').reverse().join('/');
 
-function* dateRange(startIso, endIso) {
+function* dateRange(startIso, endIso, stepDays = 1) {
   const d = new Date(startIso + 'T12:00:00Z');
   const end = new Date(endIso + 'T12:00:00Z');
   while (d <= end) {
     yield d.toISOString().slice(0, 10);
-    d.setUTCDate(d.getUTCDate() + 1);
+    d.setUTCDate(d.getUTCDate() + stepDays);
   }
 }
 const addDays = (iso, n) => {
@@ -41,7 +41,7 @@ function buildQueries() {
   for (const r of cfg.routes) {
     if (onlyRoute && `${r.origin}-${r.destination}` !== onlyRoute) continue;
     let n = 0;
-    for (const dep of dateRange(cfg.departureWindow.start, cfg.departureWindow.end)) {
+    for (const dep of dateRange(cfg.departureWindow.start, cfg.departureWindow.end, cfg.scanStepDays ?? 2)) {
       if (n++ >= limit) break;
       queries.push({
         origin: r.origin,
@@ -167,7 +167,7 @@ function checkAlertsAndDigest(combos, scanStats) {
 }
 
 function alertMessage({ route, combo }) {
-  const url = smilesSearchUrl(
+  const url = searchPageUrl(
     { origin: route.origin, destination: route.destination, departureDate: combo.depDate, returnDate: combo.retDate },
     cfg.passengers
   );
@@ -201,29 +201,24 @@ async function main() {
   const headful = process.env.HEADFUL === '1';
   const { browser, page } = await openSmilesSession({ headful });
   try {
-    const apiKey = await discoverApiKey(page);
-    console.log('x-api-key em uso:', apiKey.slice(0, 8) + '…');
+    // primeira busca pelo formulário, como usuário real — valida a sessão no anti-bot
+    const warm = await warmupSearch(page).catch((e) => ({ completed: false, error: String(e.message).slice(0, 120) }));
+    console.log('Warmup:', warm.completed ? `ok (HTTP ${warm.status})` : `incompleto${warm.error ? ' — ' + warm.error : ''} (a interação já conta)`);
 
-    // processa em lotes para dar feedback e re-tentar falhas
-    const batchSize = 40;
-    let results = [];
-    for (let i = 0; i < queries.length; i += batchSize) {
-      const batch = queries.slice(i, i + batchSize);
-      const r = await searchBatch(page, apiKey, batch, { ...cfg.passengers, concurrency: cfg.concurrency });
-      results = results.concat(r);
-      const ok = r.filter((x) => !x.error).length;
-      console.log(`Lote ${i / batchSize + 1}: ${ok}/${batch.length} ok`);
-    }
+    let done = 0;
+    let results = await searchAll(page, queries, cfg.passengers, {
+      onResult: (r, i, total) => {
+        done++;
+        const tag = r.error ? `ERRO ${r.error}` : 'ok';
+        if (r.error || done % 10 === 0) console.log(`[${done}/${total}] ${r.origin}-${r.destination} ${r.departureDate}: ${tag}`);
+      },
+    });
 
-    // re-tenta as que falharam, uma vez, devagar
-    const failed = results.filter((r) => r.error);
-    if (failed.length) {
-      console.log(`Re-tentando ${failed.length} consultas que falharam…`);
-      await page.waitForTimeout(5000);
-      const retry = await searchBatch(page, apiKey, failed.map(({ error, outbound, inbound, ...q }) => q), {
-        ...cfg.passengers,
-        concurrency: 1,
-      });
+    // re-tenta uma vez as que falharam
+    const failedQueries = results.filter((r) => r.error).map(({ error, outbound, inbound, ...q }) => q);
+    if (failedQueries.length && failedQueries.length < results.length) {
+      console.log(`Re-tentando ${failedQueries.length} consultas que falharam…`);
+      const retry = await searchAll(page, failedQueries, cfg.passengers, {});
       const byKey = new Map(retry.map((r) => [`${r.origin}-${r.destination}-${r.departureDate}`, r]));
       results = results.map((r) => (r.error ? byKey.get(`${r.origin}-${r.destination}-${r.departureDate}`) ?? r : r));
     }
