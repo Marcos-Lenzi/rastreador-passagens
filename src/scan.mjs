@@ -251,7 +251,8 @@ async function main() {
   }
 }
 
-main().catch((e) => {
+main().catch(async (e) => {
   console.error(e);
+  await sendTelegram('⚠️ Rastreador de passagens: a varredura falhou — ' + String(e.message).slice(0, 200)).catch(() => {});
   process.exit(1);
 });

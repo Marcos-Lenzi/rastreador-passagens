@@ -226,6 +226,8 @@ export async function searchAll(page, queries, pax, { onResult, rewarmAfterFails
     }
     results.push(r);
     onResult?.(r, i, queries.length);
+    if (i === 9 && results.every((x) => x.error))
+      throw new Error('as 10 primeiras consultas falharam — abortando (IP/sessão provavelmente bloqueado)');
     consecutiveFails = r.error ? consecutiveFails + 1 : 0;
     if (consecutiveFails >= rewarmAfterFails) {
       console.log(`[smiles] ${consecutiveFails} falhas seguidas — refazendo o warmup…`);
