@@ -6,6 +6,16 @@ import { openSmilesSession, warmupSearch, searchAll, searchPageUrl } from './smi
 import { sendTelegram } from './telegram.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+
+// carrega .env local (token do Telegram etc.) sem dependências externas
+const envPath = path.join(root, '.env');
+if (fs.existsSync(envPath)) {
+  for (const line of fs.readFileSync(envPath, 'utf8').split(/\r?\n/)) {
+    const m = line.match(/^([A-Z0-9_]+)=(.*)$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim();
+  }
+}
+
 const cfg = JSON.parse(fs.readFileSync(path.join(root, 'config.json'), 'utf8'));
 const statePath = path.join(root, 'data', 'state.json');
 const state = fs.existsSync(statePath)

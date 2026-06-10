@@ -41,7 +41,13 @@ export async function openSmilesSession({ headful = false } = {}) {
   const browser = await chromium.launch({
     headless: !headful,
     channel: process.env.BROWSER_CHANNEL || 'chrome',
-    args: ['--disable-blink-features=AutomationControlled', '--no-sandbox', '--disable-dev-shm-usage'],
+    args: [
+      '--disable-blink-features=AutomationControlled',
+      '--no-sandbox',
+      '--disable-dev-shm-usage',
+      // janela fora da tela: roda "visível" para o anti-bot sem incomodar o usuário
+      ...(process.env.OFFSCREEN === '1' ? ['--window-position=-32000,-32000'] : []),
+    ],
   });
   const context = await browser.newContext({
     locale: 'pt-BR',

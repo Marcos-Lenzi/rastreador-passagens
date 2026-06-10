@@ -1,10 +1,9 @@
 name: Rastreador de passagens
 
+# NOTA: o agendamento na nuvem foi desativado — o anti-bot da Smiles bloqueia
+# IPs de datacenter. O rastreador roda agendado no Windows (Task Scheduler).
+# O dispatch manual fica disponível para re-testar no futuro.
 on:
-  schedule:
-    # horários UTC → 06h, 12h, 18h e 22h de Brasília (aprox.)
-    - cron: '7 9,15,21 * * *'
-    - cron: '7 1 * * *'
   workflow_dispatch: {}
 
 permissions:
