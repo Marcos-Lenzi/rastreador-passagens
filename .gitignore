@@ -2,3 +2,5 @@ node_modules/
 debug-*.png
 *.log
 .env
+test-debug.mjs
+scan-test.log
