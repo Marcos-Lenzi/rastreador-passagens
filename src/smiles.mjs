@@ -45,6 +45,12 @@ export async function openSmilesSession({ headful = false } = {}) {
       '--disable-blink-features=AutomationControlled',
       '--no-sandbox',
       '--disable-dev-shm-usage',
+      // impede o Chrome de "economizar" (desacelerar timers/renderização)
+      // quando a janela está oculta — senão o site fica lento e dá timeout
+      '--disable-background-timer-throttling',
+      '--disable-backgrounding-occluded-windows',
+      '--disable-renderer-backgrounding',
+      '--disable-features=CalculateNativeWinOcclusion',
       // janela fora da tela: roda "visível" para o anti-bot sem incomodar o usuário
       ...(process.env.OFFSCREEN === '1' ? ['--window-position=-32000,-32000'] : []),
     ],
