@@ -16,8 +16,10 @@ if (fs.existsSync(envPath)) {
   }
 }
 
-const cfg = JSON.parse(fs.readFileSync(path.join(root, 'config.json'), 'utf8'));
-const statePath = path.join(root, 'data', 'state.json');
+// permite rodar perfis alternativos (ex.: varredura da madrugada) com config e
+// histórico próprios, sem interferir na varredura padrão
+const cfg = JSON.parse(fs.readFileSync(path.join(root, process.env.CONFIG_FILE || 'config.json'), 'utf8'));
+const statePath = path.join(root, 'data', process.env.STATE_FILE || 'state.json');
 const state = fs.existsSync(statePath)
   ? JSON.parse(fs.readFileSync(statePath, 'utf8'))
   : { bestEver: {}, lastAlerted: {}, lastDigestDate: null };
