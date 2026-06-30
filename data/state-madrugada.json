@@ -1,0 +1,137 @@
+{
+  "bestEver": {
+    "POA-MIA|SMILES": {
+      "metric": 174000,
+      "estBRL": 3480,
+      "depDate": "2026-08-18",
+      "retDate": "2026-09-15",
+      "at": "2026-06-24T07:31:02.182Z"
+    },
+    "POA-MIA|SMILES_CLUB": {
+      "metric": 161400,
+      "estBRL": 3228,
+      "depDate": "2026-08-18",
+      "retDate": "2026-09-15",
+      "at": "2026-06-24T07:31:02.182Z"
+    },
+    "POA-MIA|SMILES_MONEY": {
+      "metric": 8800,
+      "estBRL": 3576,
+      "depDate": "2026-08-18",
+      "retDate": "2026-09-15",
+      "at": "2026-06-24T07:31:02.182Z"
+    },
+    "POA-MIA|MONEY": {
+      "metric": 2854.06,
+      "estBRL": 3441.9700000000003,
+      "depDate": "2026-08-08",
+      "retDate": "2026-09-04",
+      "at": "2026-06-26T13:36:56.172Z"
+    },
+    "POA-MCO|SMILES": {
+      "metric": 180000,
+      "estBRL": 3600,
+      "depDate": "2026-08-06",
+      "retDate": "2026-08-31",
+      "at": "2026-06-26T13:36:56.172Z"
+    },
+    "POA-MCO|SMILES_CLUB": {
+      "metric": 167400,
+      "estBRL": 3348,
+      "depDate": "2026-08-06",
+      "retDate": "2026-08-31",
+      "at": "2026-06-26T13:36:56.172Z"
+    },
+    "POA-MCO|SMILES_MONEY": {
+      "metric": 9200,
+      "estBRL": 3704,
+      "depDate": "2026-08-06",
+      "retDate": "2026-08-31",
+      "at": "2026-06-26T13:36:56.172Z"
+    },
+    "POA-MCO|MONEY": {
+      "metric": 2776.2200000000003,
+      "estBRL": 3364.13,
+      "depDate": "2026-08-14",
+      "retDate": "2026-09-10",
+      "at": "2026-06-26T13:36:56.172Z"
+    },
+    "POA-ORD|SMILES": {
+      "metric": 224000,
+      "estBRL": 4480,
+      "depDate": "2026-08-18",
+      "retDate": "2026-09-15",
+      "at": "2026-06-26T13:36:56.172Z"
+    },
+    "POA-ORD|SMILES_CLUB": {
+      "metric": 208000,
+      "estBRL": 4160,
+      "depDate": "2026-08-18",
+      "retDate": "2026-09-15",
+      "at": "2026-06-26T13:36:56.172Z"
+    },
+    "POA-ORD|SMILES_MONEY": {
+      "metric": 11200,
+      "estBRL": 4584,
+      "depDate": "2026-08-18",
+      "retDate": "2026-09-15",
+      "at": "2026-06-26T13:36:56.172Z"
+    },
+    "POA-ATL|SMILES": {
+      "metric": 213000,
+      "estBRL": 4260,
+      "depDate": "2026-08-04",
+      "retDate": "2026-08-31",
+      "at": "2026-06-24T07:31:02.182Z"
+    },
+    "POA-ATL|SMILES_CLUB": {
+      "metric": 202000,
+      "estBRL": 4040,
+      "depDate": "2026-08-04",
+      "retDate": "2026-08-31",
+      "at": "2026-06-24T07:31:02.182Z"
+    },
+    "POA-ATL|SMILES_MONEY": {
+      "metric": 10800,
+      "estBRL": 4356,
+      "depDate": "2026-08-04",
+      "retDate": "2026-08-31",
+      "at": "2026-06-24T07:31:02.182Z"
+    }
+  },
+  "lastAlerted": {
+    "POA-MIA|MONEY": {
+      "metric": 2854.06,
+      "at": "2026-06-26T13:36:56.172Z"
+    },
+    "POA-MCO|MONEY": {
+      "metric": 2776.2200000000003,
+      "at": "2026-06-26T13:36:56.172Z"
+    },
+    "POA-MCO|SMILES": {
+      "metric": 180000,
+      "at": "2026-06-26T13:36:56.172Z"
+    },
+    "POA-MCO|SMILES_CLUB": {
+      "metric": 167400,
+      "at": "2026-06-26T13:36:56.172Z"
+    },
+    "POA-MCO|SMILES_MONEY": {
+      "metric": 9200,
+      "at": "2026-06-26T13:36:56.172Z"
+    },
+    "POA-ORD|SMILES": {
+      "metric": 224000,
+      "at": "2026-06-26T13:36:56.172Z"
+    },
+    "POA-ORD|SMILES_CLUB": {
+      "metric": 208000,
+      "at": "2026-06-26T13:36:56.172Z"
+    },
+    "POA-ORD|SMILES_MONEY": {
+      "metric": 11200,
+      "at": "2026-06-26T13:36:56.172Z"
+    }
+  },
+  "lastDigestDate": "2026-06-26"
+}
